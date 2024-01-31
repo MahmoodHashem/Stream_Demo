@@ -29,6 +29,11 @@ class NumberStream{
 
   final StreamController<int> streamController = StreamController<int>();
 
+
+  addError(){
+    streamController.sink.addError('error');
+  }
+
   void addToSink(int number){
     streamController.sink.add(number);
   }
