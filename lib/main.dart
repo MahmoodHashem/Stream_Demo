@@ -1,6 +1,8 @@
 
 import 'stream.dart';
 import 'package:flutter/material.dart';
+import 'dart:math';
+import 'dart:async';
 
 void main(){
   runApp(const MyApp());
@@ -34,6 +36,10 @@ class _StreamHomePageState extends State<StreamHomePage> {
   Color fcolor = Colors.blue;
   late ColorStream colorStream;
 
+  int lastNumber = 0;
+  late StreamController controller;
+  late NumberStream numberStream;
+
   void changeColor() async {
     colorStream = ColorStream();
 
@@ -53,7 +59,32 @@ class _StreamHomePageState extends State<StreamHomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    changeColor();
+
+    numberStream = NumberStream();
+    controller = numberStream.streamController;
+
+    Stream stream = controller.stream;
+
+    stream.listen((numberEvent) {
+      setState(() {
+        lastNumber = numberEvent;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    controller.close();
+  }
+
+
+  void addNumber(){
+    Random random = Random();
+
+    int myNum = random.nextInt(10);
+    numberStream.addToSink(myNum);
 
   }
 
@@ -65,7 +96,15 @@ class _StreamHomePageState extends State<StreamHomePage> {
           changeColor();
         },
         child: Container(
-          color: fcolor,
+          width: double.infinity,
+          height: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text(lastNumber.toString()),
+              ElevatedButton(onPressed: addNumber, child: Text("Add A new Number"))
+            ],
+          ),
         ),
       ),
     );
