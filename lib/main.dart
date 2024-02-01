@@ -40,8 +40,10 @@ class _StreamHomePageState extends State<StreamHomePage> {
   late StreamController controller;
 
   late NumberStream numberStream;
-  
+
   late StreamSubscription subscription;
+  late StreamSubscription subscription2;
+  String values = '';
 
   late StreamTransformer<int, int> transformer;
 
@@ -98,11 +100,13 @@ class _StreamHomePageState extends State<StreamHomePage> {
       },
     );
 
-    Stream stream = controller.stream;
+    //Stream stream = controller.stream;
+
+    Stream stream = controller.stream.asBroadcastStream();
 
     subscription =  stream.listen((numberEvent) {
       setState(() {
-        lastNumber = numberEvent;
+        values += '$numberEvent - ';
       });
     });
     subscription.onError((error){
@@ -113,6 +117,13 @@ class _StreamHomePageState extends State<StreamHomePage> {
 
     subscription.onDone(() {
       print("On done was called");
+    });
+
+
+    subscription2 = stream.listen((event) {
+      setState(() {
+        values += '$event - ';
+      });
     });
 
   }
@@ -140,7 +151,7 @@ class _StreamHomePageState extends State<StreamHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text(lastNumber.toString()),
+              Text(values),
               ElevatedButton(onPressed: addNumber, child: const Text("Add A new Number")),
               ElevatedButton(onPressed: (){
                 stopStream();
