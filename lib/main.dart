@@ -38,7 +38,10 @@ class _StreamHomePageState extends State<StreamHomePage> {
 
   int lastNumber = 0;
   late StreamController controller;
+
   late NumberStream numberStream;
+  
+  late StreamSubscription subscription;
 
   late StreamTransformer<int, int> transformer;
 
@@ -56,6 +59,24 @@ class _StreamHomePageState extends State<StreamHomePage> {
       });
     });
   }
+
+  void addNumber(){
+    Random random = Random();
+    int myNum = random.nextInt(10);
+
+    if(!controller.isClosed){
+    numberStream.addToSink(myNum);
+    }else{
+      setState(() {
+        lastNumber = -1;
+      });
+    }
+  }
+
+  void stopStream(){
+    controller.close();
+  }
+
 
   @override
   void initState() {
@@ -79,15 +100,21 @@ class _StreamHomePageState extends State<StreamHomePage> {
 
     Stream stream = controller.stream;
 
-    stream.transform(transformer).listen((numberEvent) {
+    subscription =  stream.listen((numberEvent) {
       setState(() {
         lastNumber = numberEvent;
       });
-    }).onError((error){
+    });
+    subscription.onError((error){
       setState(() {
         lastNumber = -1;
       });
-    });In
+    });
+
+    subscription.onDone(() {
+      print("On done was called");
+    });
+
   }
 
   @override
@@ -98,11 +125,7 @@ class _StreamHomePageState extends State<StreamHomePage> {
   }
 
 
-  void addNumber(){
-    Random random = Random();
-    int myNum = random.nextInt(10);
-    numberStream.addToSink(myNum);
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +141,10 @@ class _StreamHomePageState extends State<StreamHomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Text(lastNumber.toString()),
-              ElevatedButton(onPressed: addNumber, child: Text("Add A new Number"))
+              ElevatedButton(onPressed: addNumber, child: const Text("Add A new Number")),
+              ElevatedButton(onPressed: (){
+                stopStream();
+              }, child: const Text("Stop Subscription"))
             ],
           ),
         ),
